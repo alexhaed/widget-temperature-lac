@@ -168,9 +168,11 @@ for (const g of BEACHES) {
   og.label = g.group;
   for (const b of g.items) {
     const o = document.createElement("option");
+    // « Lieu — Plage » → « Lieu » (on garde les noms spécifiques tels quels)
+    const display = b.name.replace(/\s*—\s*Plage$/, "");
     o.value = JSON.stringify([b.lat, b.lng]);
-    o.textContent = b.name;
-    o.dataset.name = b.name;
+    o.textContent = display;
+    o.dataset.name = display;
     og.appendChild(o);
   }
   sel.appendChild(og);
@@ -219,17 +221,20 @@ async function getLake() {
     }
   }
   if (pts.length === 0) throw new Error("no lake data");
-  if (pts.length === 1) return pts[0].v;
+  if (pts.length === 1) return { temp: pts[0].v, slope: null };
 
-  // Encadre l'heure actuelle et interpole
+  // Encadre l'heure actuelle, interpole, et déduit la tendance (°C/h)
   for (let i = 0; i < pts.length - 1; i++) {
     const a = pts[i], b = pts[i + 1];
     if (now >= a.t && now <= b.t) {
-      return a.v + (b.v - a.v) * ((now - a.t) / (b.t - a.t));
+      const temp = a.v + (b.v - a.v) * ((now - a.t) / (b.t - a.t));
+      const slope = (b.v - a.v) / ((b.t - a.t) / 3600000);
+      return { temp: temp, slope: slope };
     }
   }
   // Hors fenêtre : point le plus proche
-  return now < pts[0].t ? pts[0].v : pts[pts.length - 1].v;
+  const v = now < pts[0].t ? pts[0].v : pts[pts.length - 1].v;
+  return { temp: v, slope: null };
 }
 
 async function getWeather() {
@@ -255,6 +260,12 @@ function windArrow(deg) {
 }
 function fmtTemp(v) { return (v === null || v === undefined) ? "–" : v.toFixed(1).replace(".", ",") + "°"; }
 function fmtWind(v) { return (v === null || v === undefined) ? "–" : Math.round(v) + " km/h"; }
+function trendArrow(slope) {
+  if (slope === null || slope === undefined) return "";
+  if (slope > 0.05) return "↑";   // l'eau se réchauffe
+  if (slope < -0.05) return "↓";  // l'eau se refroidit
+  return "→";                      // stable
+}
 
 // Récupération des données (avec cache de secours)
 let lake = null, weather = null;
@@ -263,12 +274,19 @@ try { weather = await getWeather(); } catch (e) {}
 
 let reading;
 if (lake !== null && weather !== null) {
-  reading = { lake: lake, air: weather.air, wind: weather.wind, dir: weather.dir, ts: Date.now() };
+  reading = { lake: lake.temp, slope: lake.slope, air: weather.air, wind: weather.wind, dir: weather.dir, ts: Date.now() };
   Keychain.set(KEY, JSON.stringify(reading));
 } else if (Keychain.contains(KEY)) {
   reading = JSON.parse(Keychain.get(KEY));
 } else {
-  reading = { lake: lake, air: weather ? weather.air : null, wind: weather ? weather.wind : null, dir: weather ? weather.dir : null, ts: Date.now() };
+  reading = {
+    lake: lake ? lake.temp : null,
+    slope: lake ? lake.slope : null,
+    air: weather ? weather.air : null,
+    wind: weather ? weather.wind : null,
+    dir: weather ? weather.dir : null,
+    ts: Date.now()
+  };
 }
 
 // Construction du widget
@@ -292,7 +310,8 @@ function line(text, size, color) {
   t.textColor = color;
 }
 
-line("🌊  " + fmtTemp(reading.lake) + " eau", 16, Color.white());
+const trend = trendArrow(reading.slope);
+line("🌊  " + fmtTemp(reading.lake) + " eau" + (trend ? "  " + trend : ""), 16, Color.white());
 w.addSpacing(4);
 line("🌡️  " + fmtTemp(reading.air) + " air", 14, new Color("#cfe6f5"));
 w.addSpacing(4);

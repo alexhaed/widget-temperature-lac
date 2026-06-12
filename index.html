@@ -238,10 +238,14 @@ async function getLake() {
 }
 
 async function getWeather() {
+  // Les virgules de "current" sont encodées : certains clients HTTP (dont
+  // Scriptable) échouent sinon.
+  const current = encodeURIComponent("temperature_2m,wind_speed_10m,wind_direction_10m");
   const url = "https://api.open-meteo.com/v1/forecast?latitude=" + CONFIG.lat
     + "&longitude=" + CONFIG.lng
-    + "&current=temperature_2m,wind_speed_10m,wind_direction_10m&wind_speed_unit=kmh";
+    + "&current=" + current + "&wind_speed_unit=kmh";
   const r = await new Request(url).loadJSON();
+  if (!r || !r.current) throw new Error("no weather data");
   return {
     air: r.current.temperature_2m,
     wind: r.current.wind_speed_10m,
@@ -311,7 +315,7 @@ function line(text, size, color) {
 }
 
 const trend = trendArrow(reading.slope);
-line("🌊  " + fmtTemp(reading.lake) + " eau" + (trend ? "  " + trend : ""), 16, Color.white());
+line("🌊  " + fmtTemp(reading.lake) + (trend ? "  " + trend : ""), 16, Color.white());
 w.addSpacer(4);
 line("🌡️  " + fmtTemp(reading.air) + " air", 14, new Color("#cfe6f5"));
 w.addSpacer(4);

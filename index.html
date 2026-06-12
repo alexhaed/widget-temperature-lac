@@ -129,7 +129,7 @@
     <div class="note">Astuce : tu peux générer plusieurs scripts (un par plage) et créer plusieurs widgets.</div>
   </div>
 
-  <footer>Données : Alplakes (Eawag) · open-meteo.com · v2.3</footer>
+  <footer>Données : Alplakes (Eawag) · open-meteo.com · v2.4</footer>
 </div>
 
 <!-- Liste des plages — coordonnées d'un point au large (dans l'eau).
@@ -361,7 +361,7 @@ airCol.layoutVertically();
 const airHead = airCol.addStack();
 airHead.centerAlignContent();
 const airEmoji = airHead.addText("🌡️");
-airEmoji.font = Font.systemFont(14);
+airEmoji.font = Font.systemFont(12);
 airHead.addSpacer(5);
 const airLabel = airHead.addText("Air");
 airLabel.font = Font.systemFont(11);
@@ -379,7 +379,7 @@ windCol.layoutVertically();
 const windHead = windCol.addStack();
 windHead.centerAlignContent();
 const windEmoji = windHead.addText("💨");
-windEmoji.font = Font.systemFont(14);
+windEmoji.font = Font.systemFont(12);
 windHead.addSpacer(5);
 const windLabel = windHead.addText("Vent");
 windLabel.font = Font.systemFont(11);

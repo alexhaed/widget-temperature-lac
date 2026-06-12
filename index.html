@@ -134,7 +134,7 @@
     <div class="note">Astuce : tu peux générer plusieurs scripts (un par plage) et créer plusieurs widgets.</div>
   </div>
 
-  <footer>Données : Alplakes (Eawag) · open-meteo.com · v3.4</footer>
+  <footer>Données : Alplakes (Eawag) · open-meteo.com · v3.5</footer>
 </div>
 
 <!-- Lacs romands. Chaque lac a son modèle Alplakes (model + lake) et ses plages,
@@ -356,20 +356,24 @@ if (lake !== null && weather !== null) {
 }
 
 // Construction du widget (mise en page reprise du mock-up)
+const WHITE = new Color("#ffffff");
+const LABEL = new Color("#8ab4f8");
+const MUTED = new Color("#666666");
+const LABEL_FONT = Font.mediumSystemFont(10);
+
 const w = new ListWidget();
 w.backgroundColor = new Color("#0a1628");
 w.setPadding(12, 14, 12, 14);
 
 // Titre
 const title = w.addText("🏖 " + CONFIG.name);
-title.textColor = new Color("#ffffff");
+title.textColor = WHITE;
 title.font = Font.boldSystemFont(13);
 
 w.addSpacer(8);
 
 // Température du lac (grande)
 const lacRow = w.addStack();
-lacRow.layoutHorizontally();
 lacRow.centerAlignContent();
 
 const lacIcon = lacRow.addText("🌊");
@@ -381,29 +385,28 @@ const lacStack = lacRow.addStack();
 lacStack.layoutVertically();
 
 const lacLabel = lacStack.addText("Lac");
-lacLabel.textColor = new Color("#8ab4f8");
-lacLabel.font = Font.mediumSystemFont(10);
+lacLabel.textColor = LABEL;
+lacLabel.font = LABEL_FONT;
 
 const trend = trendArrow(reading.slope);
 const lacTemp = lacStack.addText(fmtTemp(reading.lake) + (trend ? " " + trend : ""));
-lacTemp.textColor = new Color("#ffffff");
+lacTemp.textColor = WHITE;
 lacTemp.font = Font.boldSystemFont(24);
 
 w.addSpacer(8);
 
 // Air + Vent sur une ligne
 const meteoRow = w.addStack();
-meteoRow.layoutHorizontally();
 meteoRow.centerAlignContent();
 
 // Air
 const airStack = meteoRow.addStack();
 airStack.layoutVertically();
 const airLabel = airStack.addText("🌡 Air");
-airLabel.textColor = new Color("#8ab4f8");
-airLabel.font = Font.mediumSystemFont(10);
+airLabel.textColor = LABEL;
+airLabel.font = LABEL_FONT;
 const airVal = airStack.addText(fmtTemp(reading.air));
-airVal.textColor = new Color("#ffffff");
+airVal.textColor = WHITE;
 airVal.font = Font.boldSystemFont(16);
 
 meteoRow.addSpacer();
@@ -412,14 +415,14 @@ meteoRow.addSpacer();
 const ventStack = meteoRow.addStack();
 ventStack.layoutVertically();
 const ventLabel = ventStack.addText("💨 Vent");
-ventLabel.textColor = new Color("#8ab4f8");
-ventLabel.font = Font.mediumSystemFont(10);
+ventLabel.textColor = LABEL;
+ventLabel.font = LABEL_FONT;
 let ventStr = fmtWind(reading.wind);
 if (reading.dir !== null && reading.dir !== undefined) {
   ventStr += " " + windArrow(reading.dir);
 }
 const ventVal = ventStack.addText(ventStr);
-ventVal.textColor = new Color("#ffffff");
+ventVal.textColor = WHITE;
 ventVal.font = Font.boldSystemFont(16);
 
 w.addSpacer(8);
@@ -432,7 +435,7 @@ majFmt.locale = "fr_CH";
 majFmt.useNoDateStyle();
 majFmt.useShortTimeStyle();
 const maj = w.addText("Mis à jour à " + majFmt.string(new Date(reading.ts)));
-maj.textColor = new Color("#666666");
+maj.textColor = MUTED;
 maj.font = Font.systemFont(9);
 
 w.refreshAfterDate = new Date(Date.now() + CONFIG.refreshMinutes * 60 * 1000);

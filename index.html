@@ -90,10 +90,15 @@
 <div class="wrap">
   <header>
     <h1>🌊 Widget Température Lac</h1>
-    <p>Génère un widget Scriptable pour ta plage du Léman</p>
+    <p>Génère un widget Scriptable pour ta plage d'un lac romand</p>
   </header>
 
   <div class="card">
+    <div class="field">
+      <label for="lake">Lac</label>
+      <select id="lake"></select>
+    </div>
+
     <div class="field">
       <label for="beach">Plage</label>
       <select id="beach"></select>
@@ -129,60 +134,84 @@
     <div class="note">Astuce : tu peux générer plusieurs scripts (un par plage) et créer plusieurs widgets.</div>
   </div>
 
-  <footer>Données : Alplakes (Eawag) · open-meteo.com · v2.9</footer>
+  <footer>Données : Alplakes (Eawag) · open-meteo.com · v3.0</footer>
 </div>
 
-<!-- Liste des plages — coordonnées d'un point au large (dans l'eau).
-     Approximatives : ajuste/ajoute librement. -->
+<!-- Lacs romands. Chaque lac a son modèle Alplakes (model + lake) et ses plages,
+     dont les coordonnées pointent un point au large (dans l'eau).
+     Coordonnées approximatives : ajuste/ajoute librement. -->
 <script>
-const BEACHES = [
-  { group: "Suisse — Genève / La Côte", items: [
+const LAKES = [
+  { name: "Léman", model: "delft3d-flow", lake: "geneva", beaches: [
     { name: "Bains des Pâquis", lat: 46.2110, lng: 6.1545 },
     { name: "Genève-Plage", lat: 46.2090, lng: 6.1700 },
     { name: "Versoix", lat: 46.2870, lng: 6.1750 },
     { name: "Nyon", lat: 46.3800, lng: 6.2360 },
-    { name: "Rolle — Plage", lat: 46.4560, lng: 6.3400 },
-    { name: "Morges — Plage", lat: 46.5030, lng: 6.4980 },
-    { name: "Saint-Sulpice — Plage", lat: 46.5110, lng: 6.5560 },
-    { name: "Préverenges — Plage", lat: 46.5110, lng: 6.5340 },
-  ]},
-  { group: "Suisse — Lausanne / Lavaux", items: [
+    { name: "Rolle", lat: 46.4560, lng: 6.3400 },
+    { name: "Morges", lat: 46.5030, lng: 6.4980 },
+    { name: "Saint-Sulpice", lat: 46.5110, lng: 6.5560 },
+    { name: "Préverenges", lat: 46.5110, lng: 6.5340 },
     { name: "Vidy", lat: 46.5080, lng: 6.6010 },
     { name: "Ouchy", lat: 46.5040, lng: 6.6270 },
-    { name: "Pully — Plage", lat: 46.5040, lng: 6.6630 },
-    { name: "Lutry — Plage", lat: 46.5010, lng: 6.6880 },
-    { name: "Cully — Plage", lat: 46.4850, lng: 6.7300 },
+    { name: "Pully", lat: 46.5040, lng: 6.6630 },
+    { name: "Lutry", lat: 46.5010, lng: 6.6880 },
+    { name: "Cully", lat: 46.4850, lng: 6.7300 },
+    { name: "Vevey", lat: 46.4560, lng: 6.8460 },
+    { name: "La Tour-de-Peilz", lat: 46.4520, lng: 6.8600 },
+    { name: "Montreux", lat: 46.4320, lng: 6.9130 },
+    { name: "Villeneuve", lat: 46.3960, lng: 6.9230 },
+    { name: "Le Bouveret", lat: 46.3850, lng: 6.8550 },
+    { name: "Yvoire", lat: 46.3680, lng: 6.3290 },
+    { name: "Excenevex", lat: 46.3470, lng: 6.3560 },
+    { name: "Thonon-les-Bains", lat: 46.3760, lng: 6.4810 },
+    { name: "Évian-les-Bains", lat: 46.4020, lng: 6.5880 },
   ]},
-  { group: "Suisse — Riviera / Chablais", items: [
-    { name: "Vevey — Plage", lat: 46.4560, lng: 6.8460 },
-    { name: "La Tour-de-Peilz — Plage", lat: 46.4520, lng: 6.8600 },
-    { name: "Montreux — Plage", lat: 46.4320, lng: 6.9130 },
-    { name: "Villeneuve — Plage", lat: 46.3960, lng: 6.9230 },
-    { name: "Le Bouveret — Plage", lat: 46.3850, lng: 6.8550 },
+  { name: "Lac de Neuchâtel", model: "mitgcm", lake: "neuchatel", beaches: [
+    { name: "Neuchâtel", lat: 46.9980, lng: 6.9450 },
+    { name: "Yverdon-les-Bains", lat: 46.7850, lng: 6.6550 },
+    { name: "Estavayer-le-Lac", lat: 46.8470, lng: 6.8500 },
+    { name: "Cudrefin", lat: 46.9550, lng: 7.0150 },
   ]},
-  { group: "France", items: [
-    { name: "Yvoire — Plage", lat: 46.3680, lng: 6.3290 },
-    { name: "Excenevex — Plage", lat: 46.3470, lng: 6.3560 },
-    { name: "Thonon-les-Bains — Plage", lat: 46.3760, lng: 6.4810 },
-    { name: "Évian-les-Bains — Plage", lat: 46.4020, lng: 6.5880 },
+  { name: "Lac de Bienne", model: "delft3d-flow", lake: "biel", beaches: [
+    { name: "Bienne", lat: 47.1320, lng: 7.2200 },
+    { name: "Douanne", lat: 47.0950, lng: 7.1550 },
+    { name: "La Neuveville", lat: 47.0680, lng: 7.1050 },
+  ]},
+  { name: "Lac de Morat", model: "delft3d-flow", lake: "murten", beaches: [
+    { name: "Morat", lat: 46.9290, lng: 7.1080 },
+    { name: "Avenches", lat: 46.9180, lng: 7.0500 },
+    { name: "Praz (Vully)", lat: 46.9450, lng: 7.0850 },
+  ]},
+  { name: "Lac de Joux", model: "delft3d-flow", lake: "joux", beaches: [
+    { name: "Le Pont", lat: 46.6660, lng: 6.3210 },
+    { name: "L'Abbaye", lat: 46.6480, lng: 6.2950 },
+    { name: "Le Rocheray", lat: 46.6280, lng: 6.2400 },
   ]},
 ];
 
+const lakeSel = document.getElementById("lake");
 const sel = document.getElementById("beach");
-for (const g of BEACHES) {
-  const og = document.createElement("optgroup");
-  og.label = g.group;
-  for (const b of g.items) {
+
+LAKES.forEach(function (lk, i) {
+  const o = document.createElement("option");
+  o.value = String(i);
+  o.textContent = lk.name;
+  lakeSel.appendChild(o);
+});
+
+function populateBeaches() {
+  const lk = LAKES[Number(lakeSel.value)];
+  sel.innerHTML = "";
+  for (const b of lk.beaches) {
     const o = document.createElement("option");
-    // « Lieu — Plage » → « Lieu » (on garde les noms spécifiques tels quels)
-    const display = b.name.replace(/\s*—\s*Plage$/, "");
     o.value = JSON.stringify([b.lat, b.lng]);
-    o.textContent = display;
-    o.dataset.name = display;
-    og.appendChild(o);
+    o.textContent = b.name;
+    o.dataset.name = b.name;
+    sel.appendChild(o);
   }
-  sel.appendChild(og);
 }
+lakeSel.addEventListener("change", populateBeaches);
+populateBeaches();
 </script>
 
 <!-- Modèle du script Scriptable -->
@@ -194,7 +223,9 @@ const CONFIG = {
   name: "%%NAME%%",
   lat: %%LAT%%,
   lng: %%LNG%%,
-  refreshMinutes: %%FREQ%%
+  refreshMinutes: %%FREQ%%,
+  model: "%%MODEL%%",
+  lake: "%%LAKE%%"
 };
 
 const KEY = "lakewidget_" + CONFIG.lat + "_" + CONFIG.lng;
@@ -212,7 +243,7 @@ async function getLake() {
   const now = Date.now();
   const start = new Date(now - 4 * 3600 * 1000);
   const end = new Date(now + 4 * 3600 * 1000);
-  const url = "https://alplakes-api.eawag.ch/simulations/point/delft3d-flow/geneva/"
+  const url = "https://alplakes-api.eawag.ch/simulations/point/" + CONFIG.model + "/" + CONFIG.lake + "/"
     + ymdhm(start) + "/" + ymdhm(end) + "/0/" + CONFIG.lat + "/" + CONFIG.lng
     + "?variables=temperature";
   const r = await new Request(url).loadJSON();
@@ -392,6 +423,7 @@ const result = document.getElementById("result");
 let lastScript = "";
 
 document.getElementById("generate").addEventListener("click", () => {
+  const lk = LAKES[Number(lakeSel.value)];
   const opt = sel.options[sel.selectedIndex];
   const [lat, lng] = JSON.parse(opt.value);
   const name = opt.dataset.name;
@@ -402,6 +434,8 @@ document.getElementById("generate").addEventListener("click", () => {
     .replaceAll("%%LAT%%", lat)
     .replaceAll("%%LNG%%", lng)
     .replaceAll("%%FREQ%%", freq)
+    .replaceAll("%%MODEL%%", lk.model)
+    .replaceAll("%%LAKE%%", lk.lake)
     .trim();
 
   out.textContent = script;

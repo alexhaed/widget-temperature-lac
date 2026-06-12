@@ -302,7 +302,7 @@ title.font = Font.boldSystemFont(15);
 title.textColor = Color.white();
 title.lineLimit = 1;
 title.minimumScaleFactor = 0.7;
-w.addSpacing(10);
+w.addSpacer(10);
 
 function line(text, size, color) {
   const t = w.addText(text);
@@ -312,16 +312,16 @@ function line(text, size, color) {
 
 const trend = trendArrow(reading.slope);
 line("🌊  " + fmtTemp(reading.lake) + " eau" + (trend ? "  " + trend : ""), 16, Color.white());
-w.addSpacing(4);
+w.addSpacer(4);
 line("🌡️  " + fmtTemp(reading.air) + " air", 14, new Color("#cfe6f5"));
-w.addSpacing(4);
+w.addSpacer(4);
 let windText = "💨  " + fmtWind(reading.wind);
 if (reading.dir !== null && reading.dir !== undefined) {
   windText += "  " + windArrow(reading.dir) + " " + cardinal(reading.dir);
 }
 line(windText, 14, new Color("#cfe6f5"));
 
-w.addSpacing(10);
+w.addSpacer(10);
 const d = w.addDate(new Date(reading.ts));
 d.applyRelativeStyle();
 d.font = Font.systemFont(10);

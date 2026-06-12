@@ -129,7 +129,7 @@
     <div class="note">Astuce : tu peux générer plusieurs scripts (un par plage) et créer plusieurs widgets.</div>
   </div>
 
-  <footer>Données : Alplakes (Eawag) · open-meteo.com · v2.1</footer>
+  <footer>Données : Alplakes (Eawag) · open-meteo.com · v2.2</footer>
 </div>
 
 <!-- Liste des plages — coordonnées d'un point au large (dans l'eau).
@@ -309,7 +309,7 @@ const grad = new LinearGradient();
 grad.colors = [new Color("#0e2236"), new Color("#0a1626")];
 grad.locations = [0, 1];
 w.backgroundGradient = grad;
-w.setPadding(14, 14, 14, 14);
+w.setPadding(18, 14, 18, 14);
 
 // En-tête : 🏖️ + nom de la plage
 const header = w.addStack();
@@ -323,7 +323,7 @@ title.textColor = Color.white();
 title.lineLimit = 1;
 title.minimumScaleFactor = 0.6;
 
-w.addSpacer(12);
+w.addSpacer(8);
 
 // Bloc Lac : 🌊 + label "Lac" + grande température + tendance
 const lakeRow = w.addStack();
@@ -402,7 +402,7 @@ w.addSpacer();
 
 // Pied : dernière mise à jour
 const upd = w.addText(relTime(reading.ts));
-upd.font = Font.systemFont(11);
+upd.font = Font.systemFont(10);
 upd.textColor = MUTED;
 
 w.refreshAfterDate = new Date(Date.now() + CONFIG.refreshMinutes * 60 * 1000);

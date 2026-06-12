@@ -65,7 +65,8 @@
     width: 100%;
     height: 280px;
     font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-    font-size: 12px;
+    /* 16px minimum : en dessous, iOS zoome automatiquement au focus */
+    font-size: 16px;
     border-radius: 10px;
     border: 1px solid var(--border);
     padding: 12px;
@@ -123,7 +124,7 @@
     <div class="note">Astuce : tu peux générer plusieurs scripts (un par plage) et créer plusieurs widgets.</div>
   </div>
 
-  <footer>Données : Alplakes (Eawag) · open-meteo.com · v1.3</footer>
+  <footer>Données : Alplakes (Eawag) · open-meteo.com · v1.4</footer>
 </div>
 
 <!-- Liste des plages — coordonnées d'un point au large (dans l'eau).

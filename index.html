@@ -277,9 +277,9 @@ function relTime(ts) {
 }
 
 // Récupération des données (avec cache de secours)
-let lake = null, weather = null;
+let lake = null, weather = null, weatherErr = null;
 try { lake = await getLake(); } catch (e) {}
-try { weather = await getWeather(); } catch (e) {}
+try { weather = await getWeather(); } catch (e) { weatherErr = String(e); }
 
 let reading;
 if (lake !== null && weather !== null) {
@@ -334,6 +334,15 @@ w.addSpacer(10);
 const upd = w.addText(relTime(reading.ts));
 upd.font = Font.systemFont(10);
 upd.textColor = new Color("#8fb3cf");
+
+// Diagnostic : si la météo a échoué, affiche l'erreur réelle dans le widget
+if ((reading.air === null || reading.air === undefined) && weatherErr) {
+  const dbg = w.addText("⚠︎ " + weatherErr);
+  dbg.font = Font.systemFont(8);
+  dbg.textColor = new Color("#ff9a9a");
+  dbg.lineLimit = 4;
+  dbg.minimumScaleFactor = 0.6;
+}
 
 w.refreshAfterDate = new Date(Date.now() + CONFIG.refreshMinutes * 60 * 1000);
 

@@ -270,6 +270,11 @@ function trendArrow(slope) {
   if (slope < -0.05) return "↓";  // l'eau se refroidit
   return "→";                      // stable
 }
+function relTime(ts) {
+  const mins = Math.max(0, Math.round((Date.now() - ts) / 60000));
+  if (mins < 60) return "Mis à jour il y a " + mins + " min";
+  return "Mis à jour il y a " + Math.round(mins / 60) + " h";
+}
 
 // Récupération des données (avec cache de secours)
 let lake = null, weather = null;
@@ -317,7 +322,7 @@ function line(text, size, color) {
 const trend = trendArrow(reading.slope);
 line("🌊  " + fmtTemp(reading.lake) + (trend ? "  " + trend : ""), 16, Color.white());
 w.addSpacer(4);
-line("🌡️  " + fmtTemp(reading.air) + " air", 14, new Color("#cfe6f5"));
+line("🌡️  " + fmtTemp(reading.air), 14, new Color("#cfe6f5"));
 w.addSpacer(4);
 let windText = "💨  " + fmtWind(reading.wind);
 if (reading.dir !== null && reading.dir !== undefined) {
@@ -326,10 +331,9 @@ if (reading.dir !== null && reading.dir !== undefined) {
 line(windText, 14, new Color("#cfe6f5"));
 
 w.addSpacer(10);
-const d = w.addDate(new Date(reading.ts));
-d.applyRelativeStyle();
-d.font = Font.systemFont(10);
-d.textColor = new Color("#8fb3cf");
+const upd = w.addText(relTime(reading.ts));
+upd.font = Font.systemFont(10);
+upd.textColor = new Color("#8fb3cf");
 
 w.refreshAfterDate = new Date(Date.now() + CONFIG.refreshMinutes * 60 * 1000);
 

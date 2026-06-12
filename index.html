@@ -198,18 +198,38 @@ function ymdhm(d) {
 }
 
 async function getLake() {
-  const now = new Date();
-  const start = new Date(now.getTime() - 6 * 3600 * 1000);
-  const end = new Date(now.getTime() + 1 * 3600 * 1000);
+  // Alplakes ne fournit qu'un point toutes les 3 h. On récupère une fenêtre
+  // assez large pour encadrer l'heure actuelle, puis on interpole linéairement
+  // entre le point précédent et le point suivant.
+  const now = Date.now();
+  const start = new Date(now - 4 * 3600 * 1000);
+  const end = new Date(now + 4 * 3600 * 1000);
   const url = "https://alplakes-api.eawag.ch/simulations/point/delft3d-flow/geneva/"
     + ymdhm(start) + "/" + ymdhm(end) + "/0/" + CONFIG.lat + "/" + CONFIG.lng
     + "?variables=temperature";
   const r = await new Request(url).loadJSON();
-  const data = r.variables.temperature.data;
-  for (let i = data.length - 1; i >= 0; i--) {
-    if (data[i] !== null && data[i] !== undefined) return data[i];
+  const temps = r.variables.temperature.data;
+  const times = r.time.map(function (t) { return new Date(t).getTime(); });
+
+  // Ne garde que les points valides
+  const pts = [];
+  for (let i = 0; i < temps.length; i++) {
+    if (temps[i] !== null && temps[i] !== undefined) {
+      pts.push({ t: times[i], v: temps[i] });
+    }
   }
-  throw new Error("no lake data");
+  if (pts.length === 0) throw new Error("no lake data");
+  if (pts.length === 1) return pts[0].v;
+
+  // Encadre l'heure actuelle et interpole
+  for (let i = 0; i < pts.length - 1; i++) {
+    const a = pts[i], b = pts[i + 1];
+    if (now >= a.t && now <= b.t) {
+      return a.v + (b.v - a.v) * ((now - a.t) / (b.t - a.t));
+    }
+  }
+  // Hors fenêtre : point le plus proche
+  return now < pts[0].t ? pts[0].v : pts[pts.length - 1].v;
 }
 
 async function getWeather() {

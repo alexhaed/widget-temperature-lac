@@ -134,7 +134,7 @@
     <div class="note">Astuce : tu peux générer plusieurs scripts (un par plage) et créer plusieurs widgets.</div>
   </div>
 
-  <footer>Données : Alplakes (Eawag) · open-meteo.com · v3.1</footer>
+  <footer>Données : Alplakes (Eawag) · open-meteo.com · v3.2</footer>
 </div>
 
 <!-- Lacs romands. Chaque lac a son modèle Alplakes (model + lake) et ses plages,
@@ -142,29 +142,37 @@
      Coordonnées approximatives : ajuste/ajoute librement. -->
 <script>
 const LAKES = [
-  { name: "Léman", model: "delft3d-flow", lake: "geneva", beaches: [
-    { name: "Bains des Pâquis", lat: 46.2110, lng: 6.1545 },
-    { name: "Genève-Plage", lat: 46.2090, lng: 6.1700 },
-    { name: "Versoix", lat: 46.2870, lng: 6.1750 },
-    { name: "Nyon", lat: 46.3800, lng: 6.2360 },
-    { name: "Rolle", lat: 46.4560, lng: 6.3400 },
-    { name: "Morges", lat: 46.5030, lng: 6.4980 },
-    { name: "Saint-Sulpice", lat: 46.5110, lng: 6.5560 },
-    { name: "Préverenges", lat: 46.5110, lng: 6.5340 },
-    { name: "Vidy", lat: 46.5080, lng: 6.6010 },
-    { name: "Ouchy", lat: 46.5040, lng: 6.6270 },
-    { name: "Pully", lat: 46.5040, lng: 6.6630 },
-    { name: "Lutry", lat: 46.5010, lng: 6.6880 },
-    { name: "Cully", lat: 46.4850, lng: 6.7300 },
-    { name: "Vevey", lat: 46.4560, lng: 6.8460 },
-    { name: "La Tour-de-Peilz", lat: 46.4520, lng: 6.8600 },
-    { name: "Montreux", lat: 46.4320, lng: 6.9130 },
-    { name: "Villeneuve", lat: 46.3960, lng: 6.9230 },
-    { name: "Le Bouveret", lat: 46.3850, lng: 6.8550 },
-    { name: "Yvoire", lat: 46.3680, lng: 6.3290 },
-    { name: "Excenevex", lat: 46.3470, lng: 6.3560 },
-    { name: "Thonon-les-Bains", lat: 46.3760, lng: 6.4810 },
-    { name: "Évian-les-Bains", lat: 46.4020, lng: 6.5880 },
+  { name: "Léman", model: "delft3d-flow", lake: "geneva", regions: [
+    { group: "Suisse — Genève / La Côte", beaches: [
+      { name: "Bains des Pâquis", lat: 46.2110, lng: 6.1545 },
+      { name: "Genève-Plage", lat: 46.2090, lng: 6.1700 },
+      { name: "Versoix", lat: 46.2870, lng: 6.1750 },
+      { name: "Nyon", lat: 46.3800, lng: 6.2360 },
+      { name: "Rolle", lat: 46.4560, lng: 6.3400 },
+      { name: "Morges", lat: 46.5030, lng: 6.4980 },
+      { name: "Saint-Sulpice", lat: 46.5110, lng: 6.5560 },
+      { name: "Préverenges", lat: 46.5110, lng: 6.5340 },
+    ]},
+    { group: "Suisse — Lausanne / Lavaux", beaches: [
+      { name: "Vidy", lat: 46.5080, lng: 6.6010 },
+      { name: "Ouchy", lat: 46.5040, lng: 6.6270 },
+      { name: "Pully", lat: 46.5040, lng: 6.6630 },
+      { name: "Lutry", lat: 46.5010, lng: 6.6880 },
+      { name: "Cully", lat: 46.4850, lng: 6.7300 },
+    ]},
+    { group: "Suisse — Riviera / Chablais", beaches: [
+      { name: "Vevey", lat: 46.4560, lng: 6.8460 },
+      { name: "La Tour-de-Peilz", lat: 46.4520, lng: 6.8600 },
+      { name: "Montreux", lat: 46.4320, lng: 6.9130 },
+      { name: "Villeneuve", lat: 46.3960, lng: 6.9230 },
+      { name: "Le Bouveret", lat: 46.3850, lng: 6.8550 },
+    ]},
+    { group: "France", beaches: [
+      { name: "Yvoire", lat: 46.3680, lng: 6.3290 },
+      { name: "Excenevex", lat: 46.3470, lng: 6.3560 },
+      { name: "Thonon-les-Bains", lat: 46.3760, lng: 6.4810 },
+      { name: "Évian-les-Bains", lat: 46.4020, lng: 6.5880 },
+    ]},
   ]},
   { name: "Lac de Neuchâtel", model: "mitgcm", lake: "neuchatel", beaches: [
     { name: "Neuchâtel", lat: 46.9980, lng: 6.9450 },
@@ -200,19 +208,35 @@ LAKES.forEach(function (lk, i) {
   lakeSel.appendChild(o);
 });
 
+function makeBeachOption(b) {
+  const o = document.createElement("option");
+  o.value = JSON.stringify([b.lat, b.lng]);
+  o.textContent = b.name;
+  o.dataset.name = b.name;
+  return o;
+}
 function populateBeaches() {
   const lk = LAKES[Number(lakeSel.value)];
   sel.innerHTML = "";
-  for (const b of lk.beaches) {
-    const o = document.createElement("option");
-    o.value = JSON.stringify([b.lat, b.lng]);
-    o.textContent = b.name;
-    o.dataset.name = b.name;
-    sel.appendChild(o);
+  if (lk.regions) {
+    // Léman : sous-catégories par région
+    for (const r of lk.regions) {
+      const og = document.createElement("optgroup");
+      og.label = r.group;
+      for (const b of r.beaches) og.appendChild(makeBeachOption(b));
+      sel.appendChild(og);
+    }
+  } else {
+    for (const b of lk.beaches) sel.appendChild(makeBeachOption(b));
   }
 }
 lakeSel.addEventListener("change", populateBeaches);
 populateBeaches();
+
+// Sélection par défaut : Saint-Sulpice (Léman, sélectionné d'office)
+for (const o of sel.options) {
+  if (o.dataset.name === "Saint-Sulpice") { o.selected = true; break; }
+}
 </script>
 
 <!-- Modèle du script Scriptable -->

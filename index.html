@@ -129,7 +129,7 @@
     <div class="note">Astuce : tu peux générer plusieurs scripts (un par plage) et créer plusieurs widgets.</div>
   </div>
 
-  <footer>Données : Alplakes (Eawag) · open-meteo.com · v1.7</footer>
+  <footer>Données : Alplakes (Eawag) · open-meteo.com · v1.8</footer>
 </div>
 
 <!-- Liste des plages — coordonnées d'un point au large (dans l'eau).
@@ -259,16 +259,12 @@ async function getWeather() {
   };
 }
 
-function cardinal(deg) {
-  const d = ["N", "NE", "E", "SE", "S", "SO", "O", "NO"];
-  return d[Math.round(deg / 45) % 8];
-}
 function windArrow(deg) {
   // deg = provenance ; la flèche pointe vers où va le vent
   const a = ["↓", "↙", "←", "↖", "↑", "↗", "→", "↘"];
   return a[Math.round(deg / 45) % 8];
 }
-function fmtTemp(v) { return (v === null || v === undefined) ? "–" : v.toFixed(1).replace(".", ",") + "°"; }
+function fmtTemp(v) { return (v === null || v === undefined) ? "–" : v.toFixed(1) + "°"; }
 function fmtWind(v) { return (v === null || v === undefined) ? "–" : Math.round(v) + " km/h"; }
 function trendArrow(slope) {
   if (slope === null || slope === undefined) return "";
@@ -305,41 +301,108 @@ if (lake !== null && weather !== null) {
 }
 
 // Construction du widget
+const ACCENT = new Color("#8fb4dc");
+const MUTED = new Color("#8fb3cf");
+
 const w = new ListWidget();
 const grad = new LinearGradient();
-grad.colors = [new Color("#0a2540"), new Color("#13476b")];
+grad.colors = [new Color("#0e2236"), new Color("#0a1626")];
 grad.locations = [0, 1];
 w.backgroundGradient = grad;
-w.setPadding(14, 16, 14, 16);
+w.setPadding(16, 16, 16, 16);
 
-const title = w.addText(CONFIG.name);
-title.font = Font.boldSystemFont(15);
+// En-tête : 🏖️ + nom de la plage
+const header = w.addStack();
+header.centerAlignContent();
+const beach = header.addText("🏖️");
+beach.font = Font.systemFont(18);
+header.addSpacer(6);
+const title = header.addText(CONFIG.name);
+title.font = Font.boldSystemFont(17);
 title.textColor = Color.white();
 title.lineLimit = 1;
-title.minimumScaleFactor = 0.7;
-w.addSpacer(10);
+title.minimumScaleFactor = 0.6;
 
-function line(text, size, color) {
-  const t = w.addText(text);
-  t.font = Font.systemFont(size);
-  t.textColor = color;
-}
+w.addSpacer(12);
 
+// Bloc Lac : 🌊 + label "Lac" + grande température + tendance
+const lakeRow = w.addStack();
+lakeRow.centerAlignContent();
+const wave = lakeRow.addText("🌊");
+wave.font = Font.systemFont(34);
+lakeRow.addSpacer(10);
+const lakeCol = lakeRow.addStack();
+lakeCol.layoutVertically();
+const lakeLabel = lakeCol.addText("Lac");
+lakeLabel.font = Font.semiboldSystemFont(13);
+lakeLabel.textColor = ACCENT;
+const lakeValRow = lakeCol.addStack();
+lakeValRow.centerAlignContent();
+const lakeVal = lakeValRow.addText(fmtTemp(reading.lake));
+lakeVal.font = Font.boldSystemFont(38);
+lakeVal.textColor = Color.white();
+lakeVal.minimumScaleFactor = 0.6;
 const trend = trendArrow(reading.slope);
-line("🌊  " + fmtTemp(reading.lake) + (trend ? "  " + trend : ""), 16, Color.white());
-w.addSpacer(4);
-line("🌡️  " + fmtTemp(reading.air), 14, new Color("#cfe6f5"));
-w.addSpacer(4);
-let windText = "💨  " + fmtWind(reading.wind);
-if (reading.dir !== null && reading.dir !== undefined) {
-  windText += "  " + windArrow(reading.dir) + " " + cardinal(reading.dir);
+if (trend) {
+  lakeValRow.addSpacer(8);
+  const tArrow = lakeValRow.addText(trend);
+  tArrow.font = Font.systemFont(24);
+  tArrow.textColor = Color.white();
 }
-line(windText, 14, new Color("#cfe6f5"));
 
-w.addSpacer(10);
+w.addSpacer(12);
+
+// Bas : deux colonnes Air / Vent
+const bottom = w.addStack();
+
+const airCol = bottom.addStack();
+airCol.layoutVertically();
+const airHead = airCol.addStack();
+airHead.centerAlignContent();
+const airEmoji = airHead.addText("🌡️");
+airEmoji.font = Font.systemFont(15);
+airHead.addSpacer(5);
+const airLabel = airHead.addText("Air");
+airLabel.font = Font.semiboldSystemFont(13);
+airLabel.textColor = ACCENT;
+airCol.addSpacer(2);
+const airVal = airCol.addText(fmtTemp(reading.air));
+airVal.font = Font.boldSystemFont(26);
+airVal.textColor = Color.white();
+airVal.minimumScaleFactor = 0.6;
+
+bottom.addSpacer();
+
+const windCol = bottom.addStack();
+windCol.layoutVertically();
+const windHead = windCol.addStack();
+windHead.centerAlignContent();
+const windEmoji = windHead.addText("💨");
+windEmoji.font = Font.systemFont(15);
+windHead.addSpacer(5);
+const windLabel = windHead.addText("Vent");
+windLabel.font = Font.semiboldSystemFont(13);
+windLabel.textColor = ACCENT;
+windCol.addSpacer(2);
+const windValRow = windCol.addStack();
+windValRow.centerAlignContent();
+const windVal = windValRow.addText(fmtWind(reading.wind));
+windVal.font = Font.boldSystemFont(26);
+windVal.textColor = Color.white();
+windVal.minimumScaleFactor = 0.5;
+if (reading.dir !== null && reading.dir !== undefined) {
+  windValRow.addSpacer(6);
+  const dArrow = windValRow.addText(windArrow(reading.dir));
+  dArrow.font = Font.systemFont(18);
+  dArrow.textColor = Color.white();
+}
+
+w.addSpacer();
+
+// Pied : dernière mise à jour
 const upd = w.addText(relTime(reading.ts));
-upd.font = Font.systemFont(10);
-upd.textColor = new Color("#8fb3cf");
+upd.font = Font.systemFont(11);
+upd.textColor = MUTED;
 
 w.refreshAfterDate = new Date(Date.now() + CONFIG.refreshMinutes * 60 * 1000);
 

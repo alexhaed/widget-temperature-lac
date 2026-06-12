@@ -129,7 +129,7 @@
     <div class="note">Astuce : tu peux générer plusieurs scripts (un par plage) et créer plusieurs widgets.</div>
   </div>
 
-  <footer>Données : Alplakes (Eawag) · open-meteo.com · v2.2</footer>
+  <footer>Données : Alplakes (Eawag) · open-meteo.com · v2.3</footer>
 </div>
 
 <!-- Liste des plages — coordonnées d'un point au large (dans l'eau).
@@ -329,17 +329,17 @@ w.addSpacer(8);
 const lakeRow = w.addStack();
 lakeRow.centerAlignContent();
 const wave = lakeRow.addText("🌊");
-wave.font = Font.systemFont(28);
+wave.font = Font.systemFont(26);
 lakeRow.addSpacer(10);
 const lakeCol = lakeRow.addStack();
 lakeCol.layoutVertically();
 const lakeLabel = lakeCol.addText("Lac");
-lakeLabel.font = Font.semiboldSystemFont(12);
+lakeLabel.font = Font.systemFont(11);
 lakeLabel.textColor = ACCENT;
 const lakeValRow = lakeCol.addStack();
 lakeValRow.centerAlignContent();
 const lakeVal = lakeValRow.addText(fmtTemp(reading.lake));
-lakeVal.font = Font.boldSystemFont(34);
+lakeVal.font = Font.boldSystemFont(36);
 lakeVal.textColor = Color.white();
 lakeVal.lineLimit = 1;
 lakeVal.minimumScaleFactor = 0.5;
@@ -361,10 +361,10 @@ airCol.layoutVertically();
 const airHead = airCol.addStack();
 airHead.centerAlignContent();
 const airEmoji = airHead.addText("🌡️");
-airEmoji.font = Font.systemFont(15);
+airEmoji.font = Font.systemFont(14);
 airHead.addSpacer(5);
 const airLabel = airHead.addText("Air");
-airLabel.font = Font.semiboldSystemFont(12);
+airLabel.font = Font.systemFont(11);
 airLabel.textColor = ACCENT;
 airCol.addSpacer(2);
 const airVal = airCol.addText(fmtTemp(reading.air));
@@ -379,10 +379,10 @@ windCol.layoutVertically();
 const windHead = windCol.addStack();
 windHead.centerAlignContent();
 const windEmoji = windHead.addText("💨");
-windEmoji.font = Font.systemFont(15);
+windEmoji.font = Font.systemFont(14);
 windHead.addSpacer(5);
 const windLabel = windHead.addText("Vent");
-windLabel.font = Font.semiboldSystemFont(12);
+windLabel.font = Font.systemFont(11);
 windLabel.textColor = ACCENT;
 windCol.addSpacer(2);
 const windValRow = windCol.addStack();
@@ -402,7 +402,7 @@ w.addSpacer();
 
 // Pied : dernière mise à jour
 const upd = w.addText(relTime(reading.ts));
-upd.font = Font.systemFont(10);
+upd.font = Font.systemFont(9);
 upd.textColor = MUTED;
 
 w.refreshAfterDate = new Date(Date.now() + CONFIG.refreshMinutes * 60 * 1000);

@@ -123,7 +123,7 @@
     <div class="note">Astuce : tu peux générer plusieurs scripts (un par plage) et créer plusieurs widgets.</div>
   </div>
 
-  <footer>Données : Alplakes (Eawag) · open-meteo.com · v1.1</footer>
+  <footer>Données : Alplakes (Eawag) · open-meteo.com · v1.2</footer>
 </div>
 
 <!-- Liste des plages — coordonnées d'un point au large (dans l'eau).
@@ -245,7 +245,8 @@ async function getWeather() {
     + "&longitude=" + CONFIG.lng
     + "&current=" + current + "&wind_speed_unit=kmh";
   const r = await new Request(url).loadJSON();
-  if (!r || !r.current) throw new Error("no weather data");
+  if (!r) throw new Error("réponse vide");
+  if (!r.current) throw new Error(r.reason ? r.reason : JSON.stringify(r).slice(0, 140));
   return {
     air: r.current.temperature_2m,
     wind: r.current.wind_speed_10m,

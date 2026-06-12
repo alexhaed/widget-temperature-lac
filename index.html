@@ -129,7 +129,7 @@
     <div class="note">Astuce : tu peux générer plusieurs scripts (un par plage) et créer plusieurs widgets.</div>
   </div>
 
-  <footer>Données : Alplakes (Eawag) · open-meteo.com · v1.8</footer>
+  <footer>Données : Alplakes (Eawag) · open-meteo.com · v1.9</footer>
 </div>
 
 <!-- Liste des plages — coordonnées d'un point au large (dans l'eau).
@@ -309,7 +309,7 @@ const grad = new LinearGradient();
 grad.colors = [new Color("#0e2236"), new Color("#0a1626")];
 grad.locations = [0, 1];
 w.backgroundGradient = grad;
-w.setPadding(16, 16, 16, 16);
+w.setPadding(14, 14, 14, 14);
 
 // En-tête : 🏖️ + nom de la plage
 const header = w.addStack();
@@ -329,7 +329,7 @@ w.addSpacer(12);
 const lakeRow = w.addStack();
 lakeRow.centerAlignContent();
 const wave = lakeRow.addText("🌊");
-wave.font = Font.systemFont(34);
+wave.font = Font.systemFont(28);
 lakeRow.addSpacer(10);
 const lakeCol = lakeRow.addStack();
 lakeCol.layoutVertically();
@@ -339,14 +339,15 @@ lakeLabel.textColor = ACCENT;
 const lakeValRow = lakeCol.addStack();
 lakeValRow.centerAlignContent();
 const lakeVal = lakeValRow.addText(fmtTemp(reading.lake));
-lakeVal.font = Font.boldSystemFont(38);
+lakeVal.font = Font.boldSystemFont(32);
 lakeVal.textColor = Color.white();
-lakeVal.minimumScaleFactor = 0.6;
+lakeVal.lineLimit = 1;
+lakeVal.minimumScaleFactor = 0.5;
 const trend = trendArrow(reading.slope);
 if (trend) {
-  lakeValRow.addSpacer(8);
+  lakeValRow.addSpacer(6);
   const tArrow = lakeValRow.addText(trend);
-  tArrow.font = Font.systemFont(24);
+  tArrow.font = Font.systemFont(20);
   tArrow.textColor = Color.white();
 }
 

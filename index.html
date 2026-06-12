@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Widget Température Lac Léman</title>
+<style>
+  :root {
+    --bg1: #0a2540;
+    --bg2: #13476b;
+    --accent: #4fb8e8;
+    --card: #ffffff;
+    --text: #1c2b36;
+    --muted: #6b7d8a;
+    --border: #d8e2ea;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: linear-gradient(160deg, var(--bg1), var(--bg2));
+    color: var(--text);
+    min-height: 100vh;
+    padding: 32px 16px;
+    line-height: 1.5;
+  }
+  .wrap { max-width: 640px; margin: 0 auto; }
+  header { text-align: center; color: #fff; margin-bottom: 28px; }
+  header h1 { margin: 0 0 6px; font-size: 26px; }
+  header p { margin: 0; opacity: 0.85; font-size: 15px; }
+  .card {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    margin-bottom: 20px;
+  }
+  label { display: block; font-weight: 600; margin: 0 0 6px; font-size: 14px; }
+  .field { margin-bottom: 18px; }
+  select, button {
+    width: 100%;
+    padding: 12px 14px;
+    font-size: 16px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: #fff;
+    color: var(--text);
+  }
+  button {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    font-weight: 700;
+    cursor: pointer;
+    transition: filter .15s;
+  }
+  button:hover { filter: brightness(1.05); }
+  button:active { filter: brightness(0.95); }
+  .hint { font-size: 13px; color: var(--muted); margin-top: 4px; }
+  #result { display: none; }
+  #result h2 { font-size: 18px; margin: 0 0 10px; }
+  .steps { font-size: 14px; color: var(--muted); margin: 0 0 14px; padding-left: 20px; }
+  .steps li { margin-bottom: 4px; }
+  textarea#output {
+    width: 100%;
+    height: 280px;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    padding: 12px;
+    resize: vertical;
+    background: #0d1b2a;
+    color: #cfe6f5;
+  }
+  .copy-row { display: flex; gap: 10px; margin-top: 12px; }
+  .copy-row button { flex: 1; }
+  .copied { background: #2ecc71 !important; }
+  footer { text-align: center; color: #fff; opacity: 0.6; font-size: 12px; margin-top: 8px; }
+  .note { background: #eef6fb; border-left: 3px solid var(--accent); padding: 10px 12px; border-radius: 8px; font-size: 13px; color: var(--muted); margin-top: 6px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>🌊 Widget Température Lac</h1>
+    <p>Génère un widget Scriptable pour ta plage du Léman</p>
+  </header>
+
+  <div class="card">
+    <div class="field">
+      <label for="beach">Plage</label>
+      <select id="beach"></select>
+      <div class="hint">La température de l'eau est mesurée sur un point au large de la plage.</div>
+    </div>
+
+    <div class="field">
+      <label for="freq">Fréquence de mise à jour</label>
+      <select id="freq">
+        <option value="30">Toutes les 30 minutes</option>
+        <option value="60" selected>Toutes les heures</option>
+        <option value="120">Toutes les 2 heures</option>
+        <option value="180">Toutes les 3 heures</option>
+      </select>
+      <div class="hint">iOS gère le rafraîchissement réel ; cette valeur est une indication. L'horodatage « il y a X min » reste toujours juste.</div>
+    </div>
+
+    <button id="generate">Générer le script</button>
+  </div>
+
+  <div class="card" id="result">
+    <h2>📋 Ton script Scriptable</h2>
+    <ol class="steps">
+      <li>Installe l'app <strong>Scriptable</strong> (gratuite, App Store).</li>
+      <li>Copie le script ci-dessous.</li>
+      <li>Dans Scriptable : <strong>+</strong> → colle → renomme le script.</li>
+      <li>Ajoute un widget Scriptable à ton écran d'accueil et choisis ce script.</li>
+    </ol>
+    <textarea id="output" readonly spellcheck="false"></textarea>
+    <div class="copy-row">
+      <button id="copy">Copier le script</button>
+    </div>
+    <div class="note">Astuce : tu peux générer plusieurs scripts (un par plage) et créer plusieurs widgets.</div>
+  </div>
+
+  <footer>Données : Alplakes (Eawag) · open-meteo.com</footer>
+</div>
+
+<!-- Liste des plages — coordonnées d'un point au large (dans l'eau).
+     Approximatives : ajuste/ajoute librement. -->
+<script>
+const BEACHES = [
+  { group: "Suisse — Genève / La Côte", items: [
+    { name: "Genève — Bains des Pâquis", lat: 46.2110, lng: 6.1545 },
+    { name: "Genève-Plage", lat: 46.2090, lng: 6.1700 },
+    { name: "Versoix — La Bécassine", lat: 46.2870, lng: 6.1750 },
+    { name: "Nyon — Plage des Trois-Jetées", lat: 46.3800, lng: 6.2360 },
+    { name: "Rolle — Plage", lat: 46.4560, lng: 6.3400 },
+    { name: "Morges — Plage", lat: 46.5030, lng: 6.4980 },
+    { name: "Saint-Sulpice — Plage", lat: 46.5110, lng: 6.5560 },
+    { name: "Préverenges — Plage", lat: 46.5110, lng: 6.5340 },
+  ]},
+  { group: "Suisse — Lausanne / Lavaux", items: [
+    { name: "Lausanne — Vidy / Bellerive", lat: 46.5080, lng: 6.6010 },
+    { name: "Lausanne — Ouchy", lat: 46.5040, lng: 6.6270 },
+    { name: "Pully — Plage", lat: 46.5040, lng: 6.6630 },
+    { name: "Lutry — Plage", lat: 46.5010, lng: 6.6880 },
+    { name: "Cully — Plage", lat: 46.4850, lng: 6.7300 },
+  ]},
+  { group: "Suisse — Riviera / Chablais", items: [
+    { name: "Vevey — Plage", lat: 46.4560, lng: 6.8460 },
+    { name: "La Tour-de-Peilz — Plage", lat: 46.4520, lng: 6.8600 },
+    { name: "Montreux — Plage", lat: 46.4320, lng: 6.9130 },
+    { name: "Villeneuve — Plage", lat: 46.3960, lng: 6.9230 },
+    { name: "Le Bouveret — Plage", lat: 46.3850, lng: 6.8550 },
+  ]},
+  { group: "France", items: [
+    { name: "Yvoire — Plage", lat: 46.3680, lng: 6.3290 },
+    { name: "Excenevex — Plage", lat: 46.3470, lng: 6.3560 },
+    { name: "Thonon-les-Bains — Plage", lat: 46.3760, lng: 6.4810 },
+    { name: "Évian-les-Bains — Plage", lat: 46.4020, lng: 6.5880 },
+  ]},
+];
+
+const sel = document.getElementById("beach");
+for (const g of BEACHES) {
+  const og = document.createElement("optgroup");
+  og.label = g.group;
+  for (const b of g.items) {
+    const o = document.createElement("option");
+    o.value = JSON.stringify([b.lat, b.lng]);
+    o.textContent = b.name;
+    o.dataset.name = b.name;
+    og.appendChild(o);
+  }
+  sel.appendChild(og);
+}
+</script>
+
+<!-- Modèle du script Scriptable -->
+<textarea id="tpl" hidden>
+// === Widget Température Lac — %%NAME%% ===
+// Généré sur la page Widget Température Lac. Collez dans Scriptable.
+
+const CONFIG = {
+  name: "%%NAME%%",
+  lat: %%LAT%%,
+  lng: %%LNG%%,
+  refreshMinutes: %%FREQ%%
+};
+
+const KEY = "lakewidget_" + CONFIG.lat + "_" + CONFIG.lng;
+
+function pad(n) { return String(n).padStart(2, "0"); }
+function ymdhm(d) {
+  return d.getUTCFullYear() + pad(d.getUTCMonth() + 1) + pad(d.getUTCDate())
+       + pad(d.getUTCHours()) + pad(d.getUTCMinutes());
+}
+
+async function getLake() {
+  const now = new Date();
+  const start = new Date(now.getTime() - 6 * 3600 * 1000);
+  const end = new Date(now.getTime() + 1 * 3600 * 1000);
+  const url = "https://alplakes-api.eawag.ch/simulations/point/delft3d-flow/geneva/"
+    + ymdhm(start) + "/" + ymdhm(end) + "/0/" + CONFIG.lat + "/" + CONFIG.lng
+    + "?variables=temperature";
+  const r = await new Request(url).loadJSON();
+  const data = r.variables.temperature.data;
+  for (let i = data.length - 1; i >= 0; i--) {
+    if (data[i] !== null && data[i] !== undefined) return data[i];
+  }
+  throw new Error("no lake data");
+}
+
+async function getWeather() {
+  const url = "https://api.open-meteo.com/v1/forecast?latitude=" + CONFIG.lat
+    + "&longitude=" + CONFIG.lng
+    + "&current=temperature_2m,wind_speed_10m,wind_direction_10m&wind_speed_unit=kmh";
+  const r = await new Request(url).loadJSON();
+  return {
+    air: r.current.temperature_2m,
+    wind: r.current.wind_speed_10m,
+    dir: r.current.wind_direction_10m
+  };
+}
+
+function cardinal(deg) {
+  const d = ["N", "NE", "E", "SE", "S", "SO", "O", "NO"];
+  return d[Math.round(deg / 45) % 8];
+}
+function windArrow(deg) {
+  // deg = provenance ; la flèche pointe vers où va le vent
+  const a = ["↓", "↙", "←", "↖", "↑", "↗", "→", "↘"];
+  return a[Math.round(deg / 45) % 8];
+}
+function fmtTemp(v) { return (v === null || v === undefined) ? "–" : v.toFixed(1).replace(".", ",") + "°"; }
+function fmtWind(v) { return (v === null || v === undefined) ? "–" : Math.round(v) + " km/h"; }
+
+// Récupération des données (avec cache de secours)
+let lake = null, weather = null;
+try { lake = await getLake(); } catch (e) {}
+try { weather = await getWeather(); } catch (e) {}
+
+let reading;
+if (lake !== null && weather !== null) {
+  reading = { lake: lake, air: weather.air, wind: weather.wind, dir: weather.dir, ts: Date.now() };
+  Keychain.set(KEY, JSON.stringify(reading));
+} else if (Keychain.contains(KEY)) {
+  reading = JSON.parse(Keychain.get(KEY));
+} else {
+  reading = { lake: lake, air: weather ? weather.air : null, wind: weather ? weather.wind : null, dir: weather ? weather.dir : null, ts: Date.now() };
+}
+
+// Construction du widget
+const w = new ListWidget();
+const grad = new LinearGradient();
+grad.colors = [new Color("#0a2540"), new Color("#13476b")];
+grad.locations = [0, 1];
+w.backgroundGradient = grad;
+w.setPadding(14, 16, 14, 16);
+
+const title = w.addText(CONFIG.name);
+title.font = Font.boldSystemFont(15);
+title.textColor = Color.white();
+title.lineLimit = 1;
+title.minimumScaleFactor = 0.7;
+w.addSpacing(10);
+
+function line(text, size, color) {
+  const t = w.addText(text);
+  t.font = Font.systemFont(size);
+  t.textColor = color;
+}
+
+line("🌊  " + fmtTemp(reading.lake) + " eau", 16, Color.white());
+w.addSpacing(4);
+line("🌡️  " + fmtTemp(reading.air) + " air", 14, new Color("#cfe6f5"));
+w.addSpacing(4);
+let windText = "💨  " + fmtWind(reading.wind);
+if (reading.dir !== null && reading.dir !== undefined) {
+  windText += "  " + windArrow(reading.dir) + " " + cardinal(reading.dir);
+}
+line(windText, 14, new Color("#cfe6f5"));
+
+w.addSpacing(10);
+const d = w.addDate(new Date(reading.ts));
+d.applyRelativeStyle();
+d.font = Font.systemFont(10);
+d.textColor = new Color("#8fb3cf");
+
+w.refreshAfterDate = new Date(Date.now() + CONFIG.refreshMinutes * 60 * 1000);
+
+if (config.runsInWidget) {
+  Script.setWidget(w);
+} else {
+  w.presentSmall();
+}
+Script.complete();
+</textarea>
+
+<script>
+const tpl = document.getElementById("tpl").value;
+const out = document.getElementById("output");
+const result = document.getElementById("result");
+
+document.getElementById("generate").addEventListener("click", () => {
+  const opt = sel.options[sel.selectedIndex];
+  const [lat, lng] = JSON.parse(opt.value);
+  const name = opt.dataset.name;
+  const freq = document.getElementById("freq").value;
+
+  const script = tpl
+    .replaceAll("%%NAME%%", name)
+    .replaceAll("%%LAT%%", lat)
+    .replaceAll("%%LNG%%", lng)
+    .replaceAll("%%FREQ%%", freq)
+    .trim();
+
+  out.value = script;
+  result.style.display = "block";
+  result.scrollIntoView({ behavior: "smooth" });
+});
+
+document.getElementById("copy").addEventListener("click", async (e) => {
+  out.select();
+  try {
+    await navigator.clipboard.writeText(out.value);
+  } catch (_) {
+    document.execCommand("copy");
+  }
+  const btn = e.target;
+  const old = btn.textContent;
+  btn.textContent = "✅ Copié !";
+  btn.classList.add("copied");
+  setTimeout(() => { btn.textContent = old; btn.classList.remove("copied"); }, 1800);
+});
+</script>
+</body>
+</html>

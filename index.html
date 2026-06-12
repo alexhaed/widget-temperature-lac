@@ -61,18 +61,23 @@
   #result h2 { font-size: 18px; margin: 0 0 10px; }
   .steps { font-size: 14px; color: var(--muted); margin: 0 0 14px; padding-left: 20px; }
   .steps li { margin-bottom: 4px; }
-  textarea#output {
+  pre#output {
     width: 100%;
     height: 280px;
+    margin: 0;
     font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-    /* 16px minimum : en dessous, iOS zoome automatiquement au focus */
-    font-size: 16px;
+    /* <pre> n'est pas un champ de formulaire : pas de zoom iOS, taille libre */
+    font-size: 12px;
+    line-height: 1.45;
     border-radius: 10px;
     border: 1px solid var(--border);
     padding: 12px;
-    resize: vertical;
+    overflow: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
     background: #0d1b2a;
     color: #cfe6f5;
+    -webkit-overflow-scrolling: touch;
   }
   .copy-row { display: flex; gap: 10px; margin-top: 12px; }
   .copy-row button { flex: 1; }
@@ -117,14 +122,14 @@
       <li>Dans Scriptable : <strong>+</strong> → colle → renomme le script.</li>
       <li>Ajoute un widget Scriptable à ton écran d'accueil et choisis ce script.</li>
     </ol>
-    <textarea id="output" readonly spellcheck="false"></textarea>
+    <pre id="output"></pre>
     <div class="copy-row">
       <button id="copy">Copier le script</button>
     </div>
     <div class="note">Astuce : tu peux générer plusieurs scripts (un par plage) et créer plusieurs widgets.</div>
   </div>
 
-  <footer>Données : Alplakes (Eawag) · open-meteo.com · v1.6</footer>
+  <footer>Données : Alplakes (Eawag) · open-meteo.com · v1.7</footer>
 </div>
 
 <!-- Liste des plages — coordonnées d'un point au large (dans l'eau).
@@ -350,6 +355,7 @@ Script.complete();
 const tpl = document.getElementById("tpl").value;
 const out = document.getElementById("output");
 const result = document.getElementById("result");
+let lastScript = "";
 
 document.getElementById("generate").addEventListener("click", () => {
   const opt = sel.options[sel.selectedIndex];
@@ -364,17 +370,24 @@ document.getElementById("generate").addEventListener("click", () => {
     .replaceAll("%%FREQ%%", freq)
     .trim();
 
-  out.value = script;
+  out.textContent = script;
+  lastScript = script;
   result.style.display = "block";
   result.scrollIntoView({ behavior: "smooth" });
 });
 
 document.getElementById("copy").addEventListener("click", async (e) => {
-  out.select();
   try {
-    await navigator.clipboard.writeText(out.value);
+    await navigator.clipboard.writeText(lastScript);
   } catch (_) {
+    // Repli : textarea temporaire hors-écran (16px pour éviter le zoom iOS)
+    const tmp = document.createElement("textarea");
+    tmp.value = lastScript;
+    tmp.style.cssText = "position:fixed;top:-1000px;font-size:16px";
+    document.body.appendChild(tmp);
+    tmp.select();
     document.execCommand("copy");
+    document.body.removeChild(tmp);
   }
   const btn = e.target;
   const old = btn.textContent;

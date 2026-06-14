@@ -134,7 +134,7 @@
     <div class="note">Astuce : tu peux générer plusieurs scripts (un par plage) et créer plusieurs widgets.</div>
   </div>
 
-  <footer>Données : Alplakes (Eawag) · open-meteo.com · v3.5</footer>
+  <footer>Données : Alplakes (Eawag) · open-meteo.com · v3.6</footer>
 </div>
 
 <!-- Lacs romands. Chaque lac a son modèle Alplakes (model + lake) et ses plages,
@@ -328,9 +328,9 @@ function fmtTemp(v) { return (v === null || v === undefined) ? "–" : v.toFixed
 function fmtWind(v) { return (v === null || v === undefined) ? "–" : Math.round(v) + " km/h"; }
 function trendArrow(slope) {
   if (slope === null || slope === undefined) return "";
-  if (slope > 0.05) return "↑";   // l'eau se réchauffe
-  if (slope < -0.05) return "↓";  // l'eau se refroidit
-  return "→";                      // stable
+  if (slope > 0.05) return "▲";   // l'eau se réchauffe
+  if (slope < -0.05) return "▼";  // l'eau se refroidit
+  return "▶";                      // stable
 }
 
 // Récupération des données (avec cache de secours)
@@ -388,10 +388,21 @@ const lacLabel = lacStack.addText("Lac");
 lacLabel.textColor = LABEL;
 lacLabel.font = LABEL_FONT;
 
-const trend = trendArrow(reading.slope);
-const lacTemp = lacStack.addText(fmtTemp(reading.lake) + (trend ? " " + trend : ""));
+const lacTemp = lacStack.addText(fmtTemp(reading.lake));
 lacTemp.textColor = WHITE;
 lacTemp.font = Font.boldSystemFont(24);
+
+// Tendance : triangle centré horizontalement sous le chiffre.
+// Le stack se cale sur la largeur du chiffre ; les deux spacers centrent.
+const trend = trendArrow(reading.slope);
+if (trend) {
+  const triRow = lacStack.addStack();
+  triRow.addSpacer();
+  const tri = triRow.addText(trend);
+  tri.textColor = WHITE;
+  tri.font = Font.systemFont(12);
+  triRow.addSpacer();
+}
 
 w.addSpacer(8);
 

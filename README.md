@@ -1,10 +1,18 @@
 # 🌊 Widget Température Lac
 
+> ⚠️ **Dépôt déprécié et archivé.** Ce projet a été intégré à **trempette** et
+> bénéficie désormais de la **température corrigée du biais**.
+>
+> 👉 Nouvelle adresse : **https://trempette.app/widget/**
+>
+> La GitHub Page de ce dépôt est désactivée. Le code ci-dessous reste consultable
+> pour référence mais n'est plus maintenu.
+
+---
+
 Générateur de widgets [Scriptable](https://scriptable.app/) (iOS) affichant la
 **température de l'eau**, la **température de l'air** et le **vent** pour les
 plages des lacs romands.
-
-👉 **[Ouvrir le générateur](https://alexhaed.github.io/widget-temperature-lac/)**
 
 ## Comment ça marche
 
